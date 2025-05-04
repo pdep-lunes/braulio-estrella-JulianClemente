@@ -2,30 +2,44 @@ module Spec where
 import PdePreludat
 import Library
 import Test.Hspec
-data Personaje = UnPersonaje {nombre :: String, poderbasico :: string, superpoder :: string, poderactivo :: Bool, vida :: Float, aliado :: Bool, sanador :: Bool, radio :: Int}
+data Personaje = UnPersonaje {
+      nombre :: String 
+      poderbasico :: String
+      superpoder :: String  
+      poderactivo :: Bool 
+      vida :: Float
+      sanador :: Bool
+      radio :: Int
+      } deriving Show
+
+equipo :: [Personaje]
+equipo = [Espina, Pamela]
 
 ataquebasico :: Personaje -> Personaje
 ataquebasico atacante defensor
         |atacante {poderbasico} == "bolaEspinosa" = bolaEspinosa receptor
-        |atacante {poderbasico}, == "lluviaDeTuercas" = lluviadeTuercas sanador atacante receptor
-        |atacante {poderbasico} == "granadaDeEspinas" = granadaDeEspinas radio atacante receptor
+        |atacante {poderbasico}, == "lluviaDeTuercas" = lluviadeTuercas (sanador atacante) receptor
+        |atacante {poderbasico} == "granadaDeEspinas" = granadaDeEspinas (radio atacante) receptor
         | atacante {poderbasico} == "torretaCurativa" = torretaCurativa receptor
 ataqueespecial :: Personaje -> Personaje
 ataqueespecial atacante receptor
         |atacante {superpoder} == "bolaEspinosa" = bolaEspinosa receptor
-        |atacante {superpoder}, == "lluviaDeTuercas" = lluviadeTuercas sanador atacante receptor
-        |atacante {superpoder} == "granadaDeEspinas" = granadaDeEspinas radio atacante receptor
+        |atacante {superpoder}, == "lluviaDeTuercas" = lluviadeTuercas (sanador atacante) receptor
+        |atacante {superpoder} == "granadaDeEspinas" = granadaDeEspinas (radio atacante) receptor
         | atacante {superpoder} == "torretaCurativa" = torretaCurativa receptor
 dañar :: Personaje -> Int -> Personaje
 dañar dañado daño
       |dañado vida > daño = dañado {vida - daño}
       |otherwise dañado {vida = 0}
+esAliado :: Personaje -> Bool
+esAliado personaje = elem (nombre personaje) (map nombre equipo)
+
 bolaEspinosa :: Personaje -> Personaje
 bolaEspinosa receptor = dañar receptor 1000
 lluviadeTuercas :: Bool -> Personaje -> Personaje
 lluviadeTuercas sanador receptor
-      |sanador && receptor aliado = receptor {vida + 800}
-      |not.sanador && receptor not.aliado = receptor {vida/2}
+      |sanador && esAliado receptor = receptor {vida + 800}
+      |not.sanador &&  not (esAliado receptor) = receptor {vida/2}
       |otherwise receptor = receptor
 granadaDeEspinas :: Int -> Personaje -> Personaje
 granadaDeEspinas radio receptor
@@ -34,7 +48,7 @@ granadaDeEspinas radio receptor
       | otherwise bolaEspinosa receptor
  torretaCurativa :: Personaje -> Personaje
 torretaCurativa receptor
-      | receptor aliado = receptor {poderactivo = True, vida * 2}
+      | esAliado receptor = receptor {poderactivo = True, vida * 2}
       | otherwise receptor = receptor
   
   atacaconpoderespecial :: Personaje -> Bool
@@ -44,7 +58,9 @@ torretaCurativa receptor
   estanenultimas :: [Personaje] -> [Personaje]
   estanenultimas personajesenpartida = filter (map personajesenpartida vida < 800)
   Espina :: Personaje
-  Espina {nombre = "Espina", poderbasico = "bolaEspina", superpoder = "granadaDeEspinas"}
+  Espina {nombre = "Espina", poderbasico = "bolaEspina", superpoder = "granadaDeEspinas", poderactivo = True, vida = 4800, radio = 5, sanador = False}
+  Pamela :: Personaje
+      Pamela {nombre = "Pamela", poderbasico = "lluviaDeTuercas", superpoder = "torretaCurativa", vida = 9600, poderactivo = False, sanador = True, radio = 0}
 
 
 
